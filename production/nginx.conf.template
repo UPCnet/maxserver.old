@@ -1,6 +1,7 @@
 worker_processes 1;
+daemon off;
 
-user nobody nogroup;
+user nobody nobody;
 pid ${buildout:directory}/var/nginx.pid;
 error_log ${buildout:directory}/var/log/nginx.error.log;
 
