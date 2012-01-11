@@ -19,3 +19,5 @@ src
 .mr.developer.cfg
 develop-eggs
 downloads
+production/nginx
+production/nginx.conf

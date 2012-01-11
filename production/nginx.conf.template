@@ -1,8 +1,8 @@
 worker_processes 1;
 
 user nobody nogroup;
-pid /tmp/nginx.pid;
-error_log /tmp/nginx.error.log;
+pid ${buildout:directory}/var/nginx.pid;
+error_log ${buildout:directory}/var/log/nginx.error.log;
 
 events {
     worker_connections 1024;
@@ -10,26 +10,26 @@ events {
 }
 
 http {
-    include mime.types;
+    include ${buildout:directory}/production/nginx/mime.types;
     default_type application/octet-stream;
-    access_log /tmp/nginx.access.log combined;
+    access_log ${buildout:directory}/var/log/nginx.access.log combined;
     sendfile on;
 
     upstream app_server {
-        server unix:/tmp/gunicorn.sock fail_timeout=0;
+        # server unix:/tmp/gunicorn.sock fail_timeout=0;
         # For a TCP configuration:
-        # server 192.168.0.7:8000 fail_timeout=0;
+        server localhost:6543 fail_timeout=0;
     }
 
     server {
         listen 80 default;
         client_max_body_size 4G;
-        server_name _;
+        server_name ${hosts:nginx};
 
         keepalive_timeout 5;
 
         # path for static files
-        root /path/to/app/current/public;
+        root ${buildout:directory}/src/max/max/static/;
 
         location / {
             # checks for static file, if not found proxy to app
@@ -46,7 +46,7 @@ http {
 
         error_page 500 502 503 504 /500.html;
         location = /500.html {
-            root /path/to/app/current/public;
+            root ${buildout:directory}/src/max/max/static/;
         }
     }
 }
