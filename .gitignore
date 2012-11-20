@@ -20,4 +20,6 @@ src
 develop-eggs
 downloads
 production/nginx
+production/nginx.conf
+production/varnish.conf
 twitter.cfg
