@@ -1,0 +1,48 @@
+backend nginx {
+    .host = "${hosts:nginx}";
+    .port = "${ports:nginx}";
+}
+backend gunicorn {
+    .host = "${hosts:maxtalk}";
+    .port = "${ports:maxtalk}";
+}
+
+sub vcl_recv {
+
+
+
+    # Remove any port that might be stuck in the hostname.
+    set req.http.Host = regsub(req.http.Host, ":[0-9]+", "");
+
+    # Pipe websocket connections directly to Node.js.
+    if (req.http.Upgrade ~ "(?i)websocket") {
+        set req.backend = gunicorn;
+        return (pipe);
+      }
+    else {
+        set req.backend = nginx;
+    }
+    # Requests made to these paths relate to websockets - pass does not seem to
+    # work.
+    if (req.url ~ "^/socket\.io") {
+   #if (req.http.Upgrade ~ "websocket") {
+        set req.backend = gunicorn;
+        return (pipe);
+      }
+    else {
+        set req.backend = nginx;
+        return (pass);
+    }
+
+}
+
+
+sub vcl_pipe {
+    if (req.http.upgrade) {
+        set bereq.http.upgrade = req.http.upgrade;
+    }
+    else {
+        set bereq.http.Connection = "close";
+    }
+    return (pipe);
+}
